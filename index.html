@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Crumb & Craft — a neighborhood bakery baking fresh bread, pastries, and custom cakes every morning." />
+  <title>Crumb & Craft | Neighborhood Bakery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🥐</text></svg>" />
+  <script>
+    // Set theme before first paint to avoid a flash of the wrong theme
+    (function () {
+      var stored = localStorage.getItem("cc-theme");
+      var theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============ Header ============ -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#home" aria-label="Crumb & Craft home">
+        <span class="brand-mark" aria-hidden="true">🥐</span>
+        <span class="brand-name">Crumb <em>&amp;</em> Craft</span>
+      </a>
+
+      <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="#menu">Menu</a>
+        <a href="#about">About</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#visit">Visit</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle light / dark mode">
+          <span class="theme-icon theme-icon-sun" aria-hidden="true">☀️</span>
+          <span class="theme-icon theme-icon-moon" aria-hidden="true">🌙</span>
+        </button>
+        <button class="icon-btn nav-burger" id="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+          <span class="burger-bar" aria-hidden="true"></span>
+          <span class="burger-bar" aria-hidden="true"></span>
+          <span class="burger-bar" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ============ Hero ============ -->
+    <section class="hero" id="home">
+      <div class="container hero-inner">
+        <p class="hero-eyebrow">Baked fresh since 2009 · Open daily from 7am</p>
+        <h1>Warm bread,<br /><span class="hero-accent">happy neighborhood.</span></h1>
+        <p class="hero-sub">
+          Sourdough with a proper crust, flaky croissants, and cakes worth celebrating.
+          Everything is mixed, shaped, and baked by hand in our little shop on Maple Street.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#menu">See the menu</a>
+          <a class="btn btn-ghost" href="#visit">Find the bakery</a>
+        </div>
+        <ul class="hero-stats" aria-label="Bakery highlights">
+          <li><strong>18+</strong><span>years baking</span></li>
+          <li><strong>6am</strong><span>oven starts</span></li>
+          <li><strong>100%</strong><span>real butter</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ Menu ============ -->
+    <section class="section" id="menu">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Our Menu</p>
+          <h2>Baked every morning</h2>
+          <p class="section-sub">Filters are just for fun — everything sells out eventually.</p>
+        </div>
+
+        <div class="filter-bar" role="group" aria-label="Filter menu items">
+          <button class="chip is-active" data-filter="all" type="button">All</button>
+          <button class="chip" data-filter="bread" type="button">Breads</button>
+          <button class="chip" data-filter="pastry" type="button">Pastries</button>
+          <button class="chip" data-filter="cake" type="button">Cakes</button>
+        </div>
+
+        <div class="menu-grid" id="menu-grid">
+          <article class="menu-card" data-category="bread">
+            <div class="menu-card-media" aria-hidden="true">🍞</div>
+            <div class="menu-card-body">
+              <div class="menu-card-top">
+                <h3>Country Sourdough</h3>
+                <span class="price">$7.50</span>
+              </div>
+              <p>Natural levain, 36-hour cold ferment, blistered crust.</p>
+              <span class="badge badge-popular">Most loved</span>
+            </div>
+          </article>
+
+          <article class="menu-card" data-category="pastry">
+            <div class="menu-card-media" aria-hidden="true">🥐</div>
+            <div class="menu-card-body">
+              <div class="menu-card-top">
+                <h3>Butter Croissant</h3>
+                <span class="price">$4.25</span>
+              </div>
+              <p>Laminated over three days with French butter. Shatters nicely.</p>
+              <span class="badge badge-new">New</span>
+            </div>
+          </article>
+
+          <article class="menu-card" data-category="pastry">
+            <div class="menu-card-media" aria-hidden="true">🥨</div>
+            <div class="menu-card-body">
+              <div class="menu-card-top">
+                <h3>Sea Salt Soft Pretzel</h3>
+                <span class="price">$3.75</span>
+              </div>
+              <p>Chewy, malty, and brushed with brown butter. Mustard on the side.</p>
+            </div>
+          </article>
+
+          <article class="menu-card" data-category="cake">
+            <div class="menu-card-media" aria-hidden="true">🍰</div>
+            <div class="menu-card-body">
+              <div class="menu-card-top">
+                <h3>Vanilla Bean Celebration Cake</h3>
+                <span class="price">$42</span>
+              </div>
+              <p>Three layers, mascarpone frosting, Madagascar vanilla. Order 3 days ahead.</p>
+              <span class="badge badge-order">Pre-order</span>
+            </div>
+          </article>
+
+          <article class="menu-card" data-category="bread">
+            <div class="menu-card-media" aria-hidden="true">🥖</div>
+            <div class="menu-card-body">
+              <div class="menu-card-top">
+                <h3>Rosemary Olive Baguette</h3>
+                <span class="price">$5.50</span>
+              </div>
+              <p>Kalamata olives, fresh rosemary, and a dusting of semolina.</p>
+            </div>
+          </article>
+
+          <article class="menu-card" data-category="pastry">
+            <div class="menu-card-media" aria-hidden="true">🍩</div>
+            <div class="menu-card-body">
+              <div class="menu-card-top">
+                <h3>Cinnamon Morning Bun</h3>
+                <span class="price">$4.75</span>
+              </div>
+              <p>Brioche swirls rolled in cinnamon sugar while still warm.</p>
+            </div>
+          </article>
+
+          <article class="menu-card" data-category="cake">
+            <div class="menu-card-media" aria-hidden="true">🧁</div>
+            <div class="menu-card-body">
+              <div class="menu-card-top">
+                <h3>Chocolate Cupcakes</h3>
+                <span class="price">$3.50</span>
+              </div>
+              <p>Devil's food crumb, salted ganache swirl. Sold in fours.</p>
+            </div>
+          </article>
+
+          <article class="menu-card" data-category="bread">
+            <div class="menu-card-media" aria-hidden="true">🥯</div>
+            <div class="menu-card-body">
+              <div class="menu-card-top">
+                <h3>Sesame Bagels</h3>
+                <span class="price">$2.25</span>
+              </div>
+              <p>Boiled, then baked. Arrives at 7:30, usually gone by 10.</p>
+            </div>
+          </article>
+        </div>
+
+        <p class="menu-empty" id="menu-empty" hidden>No items in this category yet — check back soon!</p>
+      </div>
+    </section>
+
+    <!-- ============ About ============ -->
+    <section class="section section-alt" id="about">
+      <div class="container about-grid">
+        <div class="about-text">
+          <p class="eyebrow">Our Story</p>
+          <h2>A family oven, shared with the block</h2>
+          <p>
+            Crumb &amp; Craft started in 2009 with one secondhand deck oven and a stubborn
+            belief that good bread should be a ten-minute walk from home. Maria and Tom
+            still open the shop themselves most mornings.
+          </p>
+          <p>
+            We mill a portion of our flour, we compost every scrap, and we give leftover
+            loaves to the community fridge on the corner at closing time.
+          </p>
+          <ul class="about-points">
+            <li>🌾 <span>Flour from a family mill two counties over</span></li>
+            <li>🧈 <span>Real butter, never shortcuts</span></li>
+            <li>♻️ <span>Leftovers donated nightly, zero waste by 2027</span></li>
+          </ul>
+        </div>
+        <div class="about-visual" aria-hidden="true">
+          <div class="about-photo about-photo-main">🧑‍🍳</div>
+          <div class="about-photo about-photo-small">🍰</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Gallery ============ -->
+    <section class="section" id="gallery">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Gallery</p>
+          <h2>Out of the oven</h2>
+          <p class="section-sub">A peek at this week's trays — swap in your own photos any time.</p>
+        </div>
+        <div class="gallery-grid">
+          <div class="gallery-item" aria-hidden="true"><span>🥖</span><p>Rye boules</p></div>
+          <div class="gallery-item" aria-hidden="true"><span>🎂</span><p>Birthday set</p></div>
+          <div class="gallery-item" aria-hidden="true"><span>🥐</span><p>7am batch</p></div>
+          <div class="gallery-item" aria-hidden="true"><span>🍪</span><p>Oat cookies</p></div>
+          <div class="gallery-item" aria-hidden="true"><span>🥧</span><p>Apple pies</p></div>
+          <div class="gallery-item" aria-hidden="true"><span>🍞</span><p>Sourdough day</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Visit / Footer ============ -->
+    <section class="section section-alt" id="visit">
+      <div class="container visit-grid">
+        <div>
+          <p class="eyebrow">Visit Us</p>
+          <h2>Come say hello</h2>
+          <p class="visit-sub">
+            The coffee is hot and the first tray lands at 7. On Saturdays, ask about the
+            secret pretzel.
+          </p>
+          <ul class="visit-info">
+            <li><strong>Address</strong><span>214 Maple Street, Old Town</span></li>
+            <li><strong>Hours</strong><span>Mon–Fri 7am–4pm · Sat–Sun 8am–2pm</span></li>
+            <li><strong>Phone</strong><span><a href="tel:+15550142214">(555) 014-2214</a></span></li>
+            <li><strong>Email</strong><span><a href="mailto:hello@crumbandcraft.example">hello@crumbandcraft.example</a></span></li>
+          </ul>
+          <a class="btn btn-primary" href="mailto:hello@crumbandcraft.example?subject=Cake%20pre-order">Pre-order a cake</a>
+        </div>
+
+        <form class="newsletter" id="newsletter" novalidate>
+          <h3>Fresh news, monthly</h3>
+          <p>One email a month with seasonal bakes and pre-order reminders. No spam, promise.</p>
+          <div class="newsletter-row">
+            <label class="sr-only" for="newsletter-email">Email address</label>
+            <input type="email" id="newsletter-email" name="email" placeholder="you@example.com" required autocomplete="email" />
+            <button class="btn btn-primary" type="submit">Subscribe</button>
+          </div>
+          <p class="form-note" id="form-note" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year">2026</span> Crumb &amp; Craft Bakery. Baked with patience.</p>
+      <div class="footer-links">
+        <a href="#menu">Menu</a>
+        <a href="#about">About</a>
+        <a href="#visit">Visit</a>
+      </div>
+      <a class="to-top" href="#home" aria-label="Back to top">↑ Top</a>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
