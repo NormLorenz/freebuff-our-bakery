@@ -1,6 +1,6 @@
 # 🥐 Crumb & Craft — Neighborhood Bakery Website
 
-A simple, responsive website for a local bakery, built with plain **HTML and CSS** plus **TypeScript** (compiled to plain JS — no frameworks, no runtime dependencies).
+A simple, responsive website for a local bakery, built with plain **HTML, CSS, and JavaScript** — no frameworks, no build step, no runtime dependencies.
 
 ## Overview
 
@@ -25,25 +25,13 @@ A simple, responsive website for a local bakery, built with plain **HTML and CSS
 
 ```
 bakery-website/
-├── index.html      # All page content and structure
-├── styles.css      # Styling + light/dark themes (CSS variables)
-├── script.ts       # TypeScript source: theme toggle, nav, filters, scroll effects
-├── tsconfig.json   # TypeScript compiler options
-├── dist/
-│   └── script.js   # Compiled output loaded by index.html
-└── package.json    # `npm run build` / `npm run watch`
+├── index.html   # All page content and structure
+├── styles.css   # Styling + light/dark themes (CSS variables)
+├── script.js    # Theme toggle, nav, filters, scroll effects (loaded with `defer`)
+└── README.md    # This file
 ```
 
 ## Launching the Website
-
-### Editing the JavaScript
-
-The script source is [`script.ts`](script.ts). After changing it, recompile the `dist/script.js` that `index.html` loads:
-
-```bash
-npm install        # first time only
-npm run build      # or: npm run watch to recompile on every save
-```
 
 ### Option 1 — Double-click (simplest)
 
@@ -83,7 +71,7 @@ http://localhost:8000
 - **Colors** — change the CSS variables at the top of `styles.css` (`:root` for light mode, `[data-theme="dark"]` for dark mode)
 - **Fonts** — swap the Google Fonts link in `index.html` and the `--font-*` variables in `styles.css`
 - **Real photos** — replace the emoji placeholders in the menu, gallery, and about sections with `<img>` tags
-- **Newsletter** — wire the form handler in `script.ts` to your email service or backend endpoint (then `npm run build`)
+- **Newsletter** — wire the form handler in `script.js` to your email service or backend endpoint
 
 ## Browser Support
 
