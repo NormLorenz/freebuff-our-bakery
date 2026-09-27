@@ -79,6 +79,7 @@ body {
 img,
 svg {
   max-width: 100%;
+  height: auto;
   display: block;
 }
 
@@ -666,6 +667,7 @@ a:hover {
   margin-inline: auto;
   background: var(--hero-gradient);
   box-shadow: var(--shadow-md);
+  object-fit: cover;
 }
 
 .about-photo-small {
