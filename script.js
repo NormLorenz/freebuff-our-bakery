@@ -1,7 +1,7 @@
 /* ============================================================
    Crumb & Craft — script.js
    Theme toggle, mobile nav, menu filters, reveal-on-scroll,
-   scroll-spy, newsletter validation.
+   scroll-spy, newsletter validation, budget calculator.
    ============================================================ */
 
 (() => {
@@ -180,6 +180,139 @@
       note.textContent = "Thanks! You're on the list (demo — no email was sent). 🥐";
       form.reset();
     });
+  }
+
+  /* ---------------- Budget calculator ---------------- */
+  const calc = {
+    grid: document.getElementById("calc-items"),
+    budgetInput: document.getElementById("calc-budget-input"),
+    budgetDisplay: document.getElementById("calc-budget-display"),
+    summaryList: document.getElementById("calc-summary-list"),
+    summaryEmpty: document.getElementById("calc-summary-empty"),
+    totalCount: document.getElementById("calc-total-count"),
+    totalCost: document.getElementById("calc-total-cost"),
+    status: document.getElementById("calc-status"),
+    clearBtn: document.getElementById("calc-clear"),
+  };
+
+  if (calc.grid && calc.budgetInput && calc.summaryList && calc.status) {
+    const money = (n) => `$${n.toFixed(2)}`;
+    const counts = new Map(); // itemId -> quantity
+
+    // Pull items live from the menu cards so prices never drift out of sync
+    const items = Array.from(document.querySelectorAll("#menu-grid .menu-card"))
+      .map((card, index) => {
+        const nameEl = card.querySelector("h3");
+        const priceEl = card.querySelector(".price");
+        const price = parseFloat((priceEl?.textContent || "").replace(/[^0-9.]/g, "")) || 0;
+        return {
+          id: `item-${index}`,
+          name: nameEl ? nameEl.textContent.trim() : `Item ${index + 1}`,
+          price,
+        };
+      })
+      .filter((item) => item.price > 0);
+
+    // Build the item rows once (names come from our own markup, not user input)
+    calc.grid.innerHTML = items
+      .map(
+        (item) => `
+      <li class="calc-item is-zero" data-item-id="${item.id}">
+        <span class="calc-item-name">${item.name}</span>
+        <span class="calc-item-price">${money(item.price)}</span>
+        <span class="calc-stepper">
+          <button type="button" class="calc-step" data-step="-1" aria-label="Remove one ${item.name}">−</button>
+          <span class="calc-qty" data-qty>0</span>
+          <button type="button" class="calc-step" data-step="1" aria-label="Add one ${item.name}">+</button>
+        </span>
+      </li>`
+      )
+      .join("");
+
+    const update = () => {
+      let count = 0;
+      let total = 0;
+      items.forEach((item) => {
+        const qty = counts.get(item.id) || 0;
+        count += qty;
+        total += qty * item.price;
+      });
+      total = Math.round(total * 100) / 100;
+
+      // Summary rows for chosen items
+      const chosen = items.filter((item) => (counts.get(item.id) || 0) > 0);
+      calc.summaryList.innerHTML = chosen
+        .map((item) => {
+          const qty = counts.get(item.id) || 0;
+          return `<li><span>${qty} × ${item.name}</span><span>${money(qty * item.price)}</span></li>`;
+        })
+        .join("");
+      calc.summaryList.hidden = chosen.length === 0;
+      calc.summaryEmpty.hidden = chosen.length > 0;
+
+      calc.totalCount.textContent = String(count);
+      calc.totalCost.textContent = money(total);
+
+      // Per-item rows: qty readout + dimmed when zero
+      calc.grid.querySelectorAll(".calc-item").forEach((row) => {
+        const qty = counts.get(row.dataset.itemId) || 0;
+        row.querySelector("[data-qty]").textContent = String(qty);
+        row.classList.toggle("is-zero", qty === 0);
+      });
+
+      // Budget comparison + status message
+      const budget = parseFloat(calc.budgetInput.value);
+      const hasBudget = Number.isFinite(budget) && budget >= 0;
+      calc.budgetDisplay.textContent = hasBudget ? money(budget) : "—";
+      calc.budgetDisplay.classList.remove("is-over", "is-exact", "is-under");
+
+      let status;
+      if (!hasBudget) {
+        status = count > 0 ? "Add a budget above to check your total." : "Set a budget to get started.";
+      } else if (total > budget) {
+        calc.budgetDisplay.classList.add("is-over");
+        status = `Over budget by ${money(total - budget)}. The croissant is worth it, though.`;
+      } else if (count === 0) {
+        status = `${money(budget)} to spend — start adding items!`;
+      } else if (total === budget) {
+        calc.budgetDisplay.classList.add("is-exact");
+        status = "Exactly on budget. Impeccable math. 🎯";
+      } else {
+        calc.budgetDisplay.classList.add("is-under");
+        status = `Under budget with ${money(budget - total)} to spare.`;
+      }
+      calc.status.textContent = status;
+      calc.clearBtn.disabled = count === 0;
+    };
+
+    // Quantity steppers (event delegation on the item list)
+    calc.grid.addEventListener("click", (e) => {
+      const btn = e.target.closest(".calc-step");
+      if (!btn) return;
+      const row = btn.closest(".calc-item");
+      const id = row?.dataset.itemId;
+      if (!id) return;
+      const delta = Number(btn.dataset.step) || 0;
+      counts.set(id, Math.max(0, Math.min(99, (counts.get(id) || 0) + delta)));
+      update();
+    });
+
+    calc.budgetInput.addEventListener("input", update);
+
+    // Quick budget chips ($5 / $10 / $20)
+    document.querySelectorAll("#calculator [data-budget]").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        calc.budgetInput.value = chip.dataset.budget;
+        update();
+      });
+    });
+
+    calc.clearBtn.addEventListener("click", () => {
+      counts.clear();
+      update();
+    });
+
+    update();
   }
 
   /* ---------------- Footer year ---------------- */

@@ -10,6 +10,7 @@ A simple, responsive website for a local bakery, built with plain **HTML, CSS, a
 - **Menu** — 8 items (breads, pastries, cakes) with category filter chips (All / Breads / Pastries / Cakes)
 - **About** — the bakery's story and values
 - **Gallery** — a grid of recent bakes
+- **Budget calculator** — set a spending budget, tally up menu items with quantity steppers, and see at a glance whether you're under or over
 - **Visit** — address, hours, contact info, plus a demo newsletter signup form (front-end validation only; no email is actually sent)
 - **Footer** — with auto-updating copyright year
 
@@ -20,6 +21,7 @@ A simple, responsive website for a local bakery, built with plain **HTML, CSS, a
 - ✨ **Progressive enhancements** — fade-in cards on scroll (via `IntersectionObserver`), scroll-spy that highlights the current section in the nav, and animated menu filtering. All respect `prefers-reduced-motion`.
 - ♿ **Accessible** — skip link, ARIA labels on icon buttons, keyboard-friendly Escape-to-close mobile nav, visible focus outlines.
 - 🧩 **Easy theming** — every color is a CSS custom property. The whole dark palette is swapped by a single `[data-theme="dark"]` block in `styles.css`.
+- 🧮 **Budget calculator** — enter a budget (or tap the $5 / $10 / $20 quick chips) and add menu items with +/− steppers. The tally shows item count, cent-accurate total, and a live status message for under / exact / over budget. Prices are read straight from the menu cards at load, so editing a price in `index.html` updates the calculator automatically — no duplicate data to maintain.
 
 ## Project Structure
 
@@ -27,7 +29,7 @@ A simple, responsive website for a local bakery, built with plain **HTML, CSS, a
 bakery-website/
 ├── index.html   # All page content and structure
 ├── styles.css   # Styling + light/dark themes (CSS variables)
-├── script.js    # Theme toggle, nav, filters, scroll effects (loaded with `defer`)
+├── script.js    # Theme toggle, nav, filters, budget calculator, scroll effects (loaded with `defer`)
 └── README.md    # This file
 ```
 
@@ -71,6 +73,7 @@ http://localhost:8000
 - **Colors** — change the CSS variables at the top of `styles.css` (`:root` for light mode, `[data-theme="dark"]` for dark mode)
 - **Fonts** — swap the Google Fonts link in `index.html` and the `--font-*` variables in `styles.css`
 - **Real photos** — replace the emoji placeholders in the menu, gallery, and about sections with `<img>` tags
+- **Prices** — edit a price in `index.html` and the budget calculator picks it up automatically (it reads prices from the menu cards on load)
 - **Newsletter** — wire the form handler in `script.js` to your email service or backend endpoint
 
 ## Browser Support
@@ -80,3 +83,5 @@ Works in all modern browsers (Chrome, Edge, Firefox, Safari). Uses widely suppor
 ---
 
 > **Note:** This site was created with AI assistance using the **GLM 5.3 Flash** model, from the initial prompt *'Create an HTML, CSS, and JS website for a local bakery. Provide light mode and dark mode.'*
+
+> **Note:** Updated the site with AI assistance using the **GLM 5.3 Flash** model, from the initial prompt *'Please add a calculator so the user can tally up how much bakery products they can buy.'*
