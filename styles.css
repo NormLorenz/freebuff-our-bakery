@@ -621,6 +621,17 @@ a:hover {
   font-style: italic;
 }
 
+/* Menu load status (e.g. menu.json failed to load) */
+.menu-status {
+  margin-top: 1rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-brand);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-soft);
+}
+
 /* ---------- About ---------- */
 .about-grid {
   display: grid;

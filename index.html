@@ -31,11 +31,13 @@
       </a>
 
       <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="#home">Home</a>
         <a href="#menu">Menu</a>
         <a href="#about">About</a>
         <a href="#gallery">Gallery</a>
         <a href="#visit">Visit</a>
         <a href="#calculator">Calculator</a>
+      </nav>
 
       <div class="header-actions">
         <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle light / dark mode">
@@ -82,105 +84,13 @@
           <p class="section-sub">Filters are just for fun — everything sells out eventually.</p>
         </div>
 
-        <div class="filter-bar" role="group" aria-label="Filter menu items">
-          <button class="chip is-active" data-filter="all" type="button">All</button>
-          <button class="chip" data-filter="bread" type="button">Breads</button>
-          <button class="chip" data-filter="pastry" type="button">Pastries</button>
-          <button class="chip" data-filter="cake" type="button">Cakes</button>
-        </div>
+        <!-- Filter chips are rendered from menu.json by script.js -->
+        <div class="filter-bar" id="filter-bar" role="group" aria-label="Filter menu items"></div>
 
-        <div class="menu-grid" id="menu-grid">
-          <article class="menu-card" data-category="bread">
-            <div class="menu-card-media" aria-hidden="true">🍞</div>
-            <div class="menu-card-body">
-              <div class="menu-card-top">
-                <h3>Country Sourdough</h3>
-                <span class="price">$7.50</span>
-              </div>
-              <p>Natural levain, 36-hour cold ferment, blistered crust.</p>
-              <span class="badge badge-popular">Most loved</span>
-            </div>
-          </article>
+        <!-- Menu cards are rendered from menu.json by script.js -->
+        <div class="menu-grid" id="menu-grid"></div>
 
-          <article class="menu-card" data-category="pastry">
-            <div class="menu-card-media" aria-hidden="true">🥐</div>
-            <div class="menu-card-body">
-              <div class="menu-card-top">
-                <h3>Butter Croissant</h3>
-                <span class="price">$4.25</span>
-              </div>
-              <p>Laminated over three days with French butter. Shatters nicely.</p>
-              <span class="badge badge-new">New</span>
-            </div>
-          </article>
-
-          <article class="menu-card" data-category="pastry">
-            <div class="menu-card-media" aria-hidden="true">🥨</div>
-            <div class="menu-card-body">
-              <div class="menu-card-top">
-                <h3>Sea Salt Soft Pretzel</h3>
-                <span class="price">$3.75</span>
-              </div>
-              <p>Chewy, malty, and brushed with brown butter. Mustard on the side.</p>
-            </div>
-          </article>
-
-          <article class="menu-card" data-category="cake">
-            <div class="menu-card-media" aria-hidden="true">🍰</div>
-            <div class="menu-card-body">
-              <div class="menu-card-top">
-                <h3>Vanilla Bean Celebration Cake</h3>
-                <span class="price">$42</span>
-              </div>
-              <p>Three layers, mascarpone frosting, Madagascar vanilla. Order 3 days ahead.</p>
-              <span class="badge badge-order">Pre-order</span>
-            </div>
-          </article>
-
-          <article class="menu-card" data-category="bread">
-            <div class="menu-card-media" aria-hidden="true">🥖</div>
-            <div class="menu-card-body">
-              <div class="menu-card-top">
-                <h3>Rosemary Olive Baguette</h3>
-                <span class="price">$5.50</span>
-              </div>
-              <p>Kalamata olives, fresh rosemary, and a dusting of semolina.</p>
-            </div>
-          </article>
-
-          <article class="menu-card" data-category="pastry">
-            <div class="menu-card-media" aria-hidden="true">🍩</div>
-            <div class="menu-card-body">
-              <div class="menu-card-top">
-                <h3>Cinnamon Morning Bun</h3>
-                <span class="price">$4.75</span>
-              </div>
-              <p>Brioche swirls rolled in cinnamon sugar while still warm.</p>
-            </div>
-          </article>
-
-          <article class="menu-card" data-category="cake">
-            <div class="menu-card-media" aria-hidden="true">🧁</div>
-            <div class="menu-card-body">
-              <div class="menu-card-top">
-                <h3>Chocolate Cupcakes</h3>
-                <span class="price">$3.50</span>
-              </div>
-              <p>Devil's food crumb, salted ganache swirl. Sold in fours.</p>
-            </div>
-          </article>
-
-          <article class="menu-card" data-category="bread">
-            <div class="menu-card-media" aria-hidden="true">🥯</div>
-            <div class="menu-card-body">
-              <div class="menu-card-top">
-                <h3>Sesame Bagels</h3>
-                <span class="price">$2.25</span>
-              </div>
-              <p>Boiled, then baked. Arrives at 7:30, usually gone by 10.</p>
-            </div>
-          </article>
-        </div>
+        <p class="menu-status" id="menu-status" role="status" hidden></p>
 
         <p class="menu-empty" id="menu-empty" hidden>No items in this category yet — check back soon!</p>
       </div>

@@ -1,0 +1,77 @@
+{
+  "categories": [
+    { "id": "all", "label": "All" },
+    { "id": "bread", "label": "Breads" },
+    { "id": "pastry", "label": "Pastries" },
+    { "id": "cake", "label": "Cakes" }
+  ],
+  "items": [
+    {
+      "id": "sourdough",
+      "name": "Country Sourdough",
+      "category": "bread",
+      "price": 7.5,
+      "emoji": "🍞",
+      "description": "Natural levain, 36-hour cold ferment, blistered crust.",
+      "badge": { "text": "Most loved", "style": "popular" }
+    },
+    {
+      "id": "croissant",
+      "name": "Butter Croissant",
+      "category": "pastry",
+      "price": 4.25,
+      "emoji": "🥐",
+      "description": "Laminated over three days with French butter. Shatters nicely.",
+      "badge": { "text": "New", "style": "new" }
+    },
+    {
+      "id": "pretzel",
+      "name": "Sea Salt Soft Pretzel",
+      "category": "pastry",
+      "price": 3.75,
+      "emoji": "🥨",
+      "description": "Chewy, malty, and brushed with brown butter. Mustard on the side."
+    },
+    {
+      "id": "celebration-cake",
+      "name": "Vanilla Bean Celebration Cake",
+      "category": "cake",
+      "price": 42,
+      "emoji": "🍰",
+      "description": "Three layers, mascarpone frosting, Madagascar vanilla. Order 3 days ahead.",
+      "badge": { "text": "Pre-order", "style": "order" }
+    },
+    {
+      "id": "baguette",
+      "name": "Rosemary Olive Baguette",
+      "category": "bread",
+      "price": 5.5,
+      "emoji": "🥖",
+      "description": "Kalamata olives, fresh rosemary, and a dusting of semolina."
+    },
+    {
+      "id": "morning-bun",
+      "name": "Cinnamon Morning Bun",
+      "category": "pastry",
+      "price": 4.75,
+      "emoji": "🍩",
+      "description": "Brioche swirls rolled in cinnamon sugar while still warm."
+    },
+    {
+      "id": "cupcakes",
+      "name": "Chocolate Cupcakes",
+      "category": "cake",
+      "price": 3.5,
+      "emoji": "🧁",
+      "description": "Devil's food crumb, salted ganache swirl. Sold in fours."
+    },
+    {
+      "id": "bagels",
+      "name": "Sesame Bagels",
+      "category": "bread",
+      "price": 2.25,
+      "emoji": "🥯",
+      "description": "Boiled, then baked. Arrives at 7:30, usually gone by 10."
+    }
+  ]
+}
