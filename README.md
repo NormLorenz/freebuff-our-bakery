@@ -1,6 +1,6 @@
 # 🥐 Crumb & Craft — Neighborhood Bakery Website
 
-A simple, responsive website for a local bakery, built with plain **HTML, CSS, and JavaScript** — no frameworks, no build step, no runtime dependencies.
+A simple, responsive website for a local bakery. The site itself is plain **HTML, CSS, and JavaScript** — no frameworks and no build step — with an optional Express server that powers the chatbot ordering API.
 
 ## Overview
 
@@ -11,6 +11,7 @@ A simple, responsive website for a local bakery, built with plain **HTML, CSS, a
 - **About** — the bakery's story and values
 - **Gallery** — a grid of recent bakes
 - **Budget calculator** — set a spending budget, tally up menu items with quantity steppers, and see at a glance whether you're under or over
+- **Order** — a preview of the upcoming chat ordering assistant: a styled chat window between the calculator and visit sections, with sample messages and suggestion chips
 - **Visit** — address, hours, contact info, plus a demo newsletter signup form (front-end validation only; no email is actually sent)
 - **Footer** — with auto-updating copyright year
 
@@ -23,19 +24,22 @@ A simple, responsive website for a local bakery, built with plain **HTML, CSS, a
 - 🧩 **Easy theming** — every color is a CSS custom property. The whole dark palette is swapped by a single `[data-theme="dark"]` block in `styles.css`.
 - 🧮 **Budget calculator** — enter a budget (or tap the $5 / $10 / $20 quick chips) and add menu items with +/− steppers. The tally shows item count, cent-accurate total, and a live status message for under / exact / over budget. Prices are read straight from the rendered menu cards at load, so editing a price in `menu.json` updates the calculator automatically — no duplicate data to maintain.
 - 🗂️ **JSON-driven menu** — the whole menu (items, categories, filter chips, badges) lives in `menu.json` and is rendered by `script.js` at load. Add, remove, or reprice items without touching `index.html`. Still fully static: no backend, no build step.
+- 💬 **Order-by-chat placeholder** — an `#order` section with a chat shell (assistant header, message log, suggestion chips, input row) styled to match both themes and ready to be wired to the `/api/chat` endpoint. The input is intentionally disabled until the front-end wiring lands.
 
 ## Project Structure
 
 ```
 bakery-website/
 ├── menu.json                # Menu data: items, categories, prices, badges (shared by site + chat API)
+├── server.js                # Express server: serves public/, menu.json, and POST /api/chat
 ├── public/                  # Static site (served over HTTP)
 │   ├── index.html           # Page structure (menu cards & filter chips are rendered by JS)
 │   ├── styles.css           # Styling + light/dark themes (CSS variables)
 │   ├── script.js            # Loads ../menu.json, then theme toggle, nav, filters, budget calculator, scroll effects (loaded with `defer`)
 │   └── images/              # Site images
 ├── api/                     # Backend (chat API)
-│   └── chat.js
+│   └── chat.js              # OpenAI-powered ordering assistant (returns structured JSON orders)
+├── .env.example             # Template for OPENAI_API_KEY, OPENAI_MODEL, and PORT
 └── README.md                # This file
 ```
 
@@ -68,17 +72,22 @@ Items with a missing name or a price ≤ 0 are skipped, and missing optional fie
 
 The menu is fetched from `menu.json`, and browsers block `fetch()` on `file://` pages. Opening the file directly shows an explanation instead of the menu (everything else on the page still works). Serve it over HTTP using one of the options below.
 
-### Option 1 — The included chat server
+### Option 1 — The included chat server (recommended)
 
-`npm start` runs `server.js`, which serves the site, `menu.json`, and the `/api/chat` endpoint on one port:
+Install dependencies once, then start the server:
 
 ```bash
+npm install
 npm start
 ```
 
-Then visit `http://localhost:3000` (or add `/public/` — both work).
+> **Tip:** There is no `npm serve` command — `serve` is not a built-in npm command. Use `npm start`, or `npm run dev` to auto-restart whenever the server code changes.
 
-For hosting, any static host works as-is — GitHub Pages, Netlify, Cloudflare Pages, etc.
+`npm start` runs `server.js`, which serves the site, `menu.json`, and the `/api/chat` endpoint on one port. Then visit `http://localhost:3000` (or add `/public/` — both work).
+
+The site works out of the box, but the chat endpoint needs an OpenAI API key: copy `.env.example` to `.env` and set `OPENAI_API_KEY` (you can also adjust `OPENAI_MODEL` and `PORT`).
+
+For hosting, any static host works as-is for the site itself — GitHub Pages, Netlify, Cloudflare Pages, etc. Chat ordering requires the Node server (or a serverless deployment of `api/chat.js`).
 
 ## Customizing
 
@@ -98,3 +107,5 @@ Works in all modern browsers (Chrome, Edge, Firefox, Safari). Uses widely suppor
 > **Note:** This site was created with AI assistance using the **GLM 5.3 Flash** model, from the initial prompt *'Create an HTML, CSS, and JS website for a local bakery. Provide light mode and dark mode.'*
 
 > **Note:** Updated the site with AI assistance using the **GLM 5.3 Flash** model, from the initial prompt *'Please add a calculator so the user can tally up how much bakery products they can buy.'*
+
+> **Note:** Updated the site with AI assistance using the **GLM 5.3 Flash** model, from the initial prompt *'Please add a new menu item called 'Order' to the right of the 'Calculator' and build a placeholder in the html file so the user can use a chatbot to order items.'*
