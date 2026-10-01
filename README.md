@@ -11,7 +11,7 @@ A simple, responsive website for a local bakery. The site itself is plain **HTML
 - **About** — the bakery's story and values
 - **Gallery** — a grid of recent bakes
 - **Budget calculator** — set a spending budget, tally up menu items with quantity steppers, and see at a glance whether you're under or over
-- **Order** — a preview of the upcoming chat ordering assistant: a styled chat window between the calculator and visit sections, with sample messages and suggestion chips
+- **Order** — a working chat ordering assistant: a two-panel layout with the chat on the left and a live "Your Order" summary on the right (customer name, items with unit prices, total, and a PENDING/CONFIRMED/CANCELLED status badge). Messages go through `POST /api/chat` (OpenAI, structured JSON output), with Start over / Confirm Order / Cancel Order controls and typing-indicator feedback
 - **Visit** — address, hours, contact info, plus a demo newsletter signup form (front-end validation only; no email is actually sent)
 - **Footer** — with auto-updating copyright year
 
@@ -24,7 +24,7 @@ A simple, responsive website for a local bakery. The site itself is plain **HTML
 - 🧩 **Easy theming** — every color is a CSS custom property. The whole dark palette is swapped by a single `[data-theme="dark"]` block in `styles.css`.
 - 🧮 **Budget calculator** — enter a budget (or tap the $5 / $10 / $20 quick chips) and add menu items with +/− steppers. The tally shows item count, cent-accurate total, and a live status message for under / exact / over budget. Prices are read straight from the rendered menu cards at load, so editing a price in `menu.json` updates the calculator automatically — no duplicate data to maintain.
 - 🗂️ **JSON-driven menu** — the whole menu (items, categories, filter chips, badges) lives in `menu.json` and is rendered by `script.js` at load. Add, remove, or reprice items without touching `index.html`. Still fully static: no backend, no build step.
-- 💬 **Order-by-chat placeholder** — an `#order` section with a chat shell (assistant header, message log, suggestion chips, input row) styled to match both themes and ready to be wired to the `/api/chat` endpoint. The input is intentionally disabled until the front-end wiring lands.
+- 💬 **Order-by-chat** — the `#order` section's chat is wired to `POST /api/chat`. The front-end keeps the conversation history, renders the assistant's replies, and mirrors the structured `order` object (customer, items, total, status) into the order panel. Confirm/Cancel send an explicit message back to the assistant so the model updates the order status; "Start over" resets the conversation. If the API is unreachable or `OPENAI_API_KEY` is missing, the chat shows a friendly error bubble instead of breaking.
 
 ## Project Structure
 

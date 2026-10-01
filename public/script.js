@@ -422,6 +422,209 @@
     }
   };
 
+  /* ---------------- Chat ordering assistant (POST /api/chat) ---------------- */
+  const initChat = () => {
+    const chatWindow = document.getElementById("chat-window");
+    const chatForm = document.getElementById("chat-form");
+    const chatInput = document.getElementById("chat-input");
+    const chatSend = chatForm ? chatForm.querySelector(".chat-send") : null;
+    const resetBtn = document.getElementById("chat-reset");
+    const orderStatusEl = document.getElementById("order-status");
+    const orderCustomerEl = document.getElementById("order-customer");
+    const orderCustomerNameEl = document.getElementById("order-customer-name");
+    const orderItemsEl = document.getElementById("order-items");
+    const orderEmptyEl = document.getElementById("order-empty");
+    const orderTotalEl = document.getElementById("order-total");
+    const confirmBtn = document.getElementById("order-confirm");
+    const cancelBtn = document.getElementById("order-cancel");
+
+    if (!chatWindow || !chatForm || !chatInput || !chatSend) return;
+
+    const GREETING =
+      "Welcome to Crumb & Craft Bakery! What can I help you order today?";
+
+    // Conversation history sent to /api/chat. The greeting is display-only.
+    let messages = [];
+    let order = null;
+    let awaitingReply = false;
+
+    const money = (n) => "$" + Number(n || 0).toFixed(2);
+
+    const addMessage = (role, text) => {
+      const row = document.createElement("div");
+      row.className = "chat-msg" + (role === "user" ? " is-user" : " is-bot");
+
+      if (role !== "user") {
+        const avatar = document.createElement("span");
+        avatar.className = "chat-msg-avatar";
+        avatar.setAttribute("aria-hidden", "true");
+        avatar.textContent = "🥐";
+        row.appendChild(avatar);
+      }
+
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble";
+      const p = document.createElement("p");
+      p.className = "chat-msg-text";
+      p.textContent = text; // textContent, never innerHTML — messages are untrusted
+      bubble.appendChild(p);
+      row.appendChild(bubble);
+
+      chatWindow.appendChild(row);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      return row;
+    };
+
+    const showTyping = () => {
+      const row = addMessage("assistant", "...");
+      row.classList.add("is-typing");
+      const text = row.querySelector(".chat-msg-text");
+      if (text) {
+        text.innerHTML = "<span class=\"chat-typing\" aria-label=\"Assistant is typing\"><i></i><i></i><i></i></span>";
+      }
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      return row;
+    };
+
+    const setBusy = (busy) => {
+      awaitingReply = busy;
+      chatInput.disabled = busy;
+      chatSend.disabled = busy;
+      refreshOrderButtons();
+      if (!busy) chatInput.focus();
+    };
+
+    const refreshOrderButtons = () => {
+      const hasItems = Boolean(order && Array.isArray(order.items) && order.items.length > 0);
+      const isPending = Boolean(order && order.status === "pending");
+      const enable = hasItems && isPending && !awaitingReply;
+      if (confirmBtn) confirmBtn.disabled = !enable;
+      if (cancelBtn) cancelBtn.disabled = !enable;
+      if (resetBtn) resetBtn.disabled = awaitingReply || messages.length === 0;
+    };
+
+    const renderOrder = (nextOrder) => {
+      order = nextOrder || null;
+
+      const items = order && Array.isArray(order.items) ? order.items : [];
+      const status = order && typeof order.status === "string" ? order.status : "pending";
+      const firstName = order && order.customer && typeof order.customer.first_name === "string"
+        ? order.customer.first_name.trim()
+        : "";
+
+      if (orderStatusEl) {
+        orderStatusEl.textContent = status.toUpperCase();
+        orderStatusEl.dataset.status = status;
+      }
+
+      if (orderCustomerEl && orderCustomerNameEl) {
+        orderCustomerEl.hidden = firstName === "";
+        orderCustomerNameEl.textContent = firstName;
+      }
+
+      if (orderItemsEl) {
+        orderItemsEl.innerHTML = items
+          .map((item) => {
+            const name = escapeHtml(item && item.name ? item.name : "Item");
+            const qty = Number(item && item.quantity) || 0;
+            const lineTotal = money(item && item.line_total);
+            const unit = Number(item && item.unit_price) || 0;
+            return `
+              <li class="order-item">
+                <div class="order-item-text">
+                  <span class="order-item-name">${qty} × ${name}</span>
+                  <span class="order-item-unit">${money(unit)} each</span>
+                </div>
+                <span class="order-item-price">${lineTotal}</span>
+              </li>`;
+          })
+          .join("");
+      }
+
+      if (orderEmptyEl) orderEmptyEl.hidden = items.length > 0;
+
+      if (orderTotalEl) {
+        orderTotalEl.textContent = money(
+          order && Number.isFinite(Number(order.order_total)) ? Number(order.order_total) : 0
+        );
+      }
+
+      refreshOrderButtons();
+    };
+
+    const askAssistant = (userText) => {
+      if (awaitingReply) return;
+      const text = String(userText || "").trim();
+      if (!text) return;
+
+      messages.push({ role: "user", content: text.slice(0, 500) });
+      addMessage("user", text);
+      chatInput.value = "";
+
+      const typing = showTyping();
+      setBusy(true);
+
+      fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages }),
+      })
+        .then(async (response) => {
+          if (!response.ok) throw new Error("Chat request failed: " + response.status);
+          return response.json();
+        })
+        .then((data) => {
+          typing.remove();
+          if (!data || typeof data.customer_response !== "string") {
+            throw new Error("Unexpected response from the assistant.");
+          }
+          messages.push({ role: "assistant", content: data.customer_response });
+          addMessage("assistant", data.customer_response);
+          renderOrder(data.order);
+        })
+        .catch(() => {
+          typing.remove();
+          // Roll back the unsent user message so history stays honest.
+          if (messages.length && messages[messages.length - 1].role === "user") {
+            messages.pop();
+          }
+          addMessage(
+            "assistant",
+            "Sorry — the oven light is on and I couldn't reach the kitchen. Please try again in a moment."
+          );
+        })
+        .finally(() => setBusy(false));
+    };
+
+    const startOver = () => {
+      if (awaitingReply) return;
+      messages = [];
+      chatWindow.innerHTML = "";
+      addMessage("assistant", GREETING);
+      renderOrder(null);
+      chatInput.focus();
+    };
+
+    chatForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      askAssistant(chatInput.value);
+    });
+
+    if (resetBtn) resetBtn.addEventListener("click", startOver);
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", () => askAssistant("Confirm my order."));
+    }
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", () => askAssistant("Cancel my order."));
+    }
+
+    // Initial state
+    addMessage("assistant", GREETING);
+    renderOrder(null);
+  };
+
+  initChat();
+
   /* ---------------- Footer year ---------------- */
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());

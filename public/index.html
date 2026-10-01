@@ -202,52 +202,50 @@
       </div>
     </section>
 
-    <!-- ============ Order (chatbot placeholder) ============ -->
+    <!-- ============ Order (chat ordering assistant) ============ -->
     <section class="section" id="order">
       <div class="container">
         <div class="section-head">
           <p class="eyebrow">Order Online</p>
-          <h2>Chat your order</h2>
-          <p class="section-sub">Tell our bakery assistant what you're craving and it will build your order from the menu above. Here's a first look.</p>
+          <h2>Chat with our baker</h2>
+          <p class="section-sub">Tell our bakery assistant what you're craving and it will build your order from the menu above.</p>
         </div>
 
-        <div class="chat-shell" aria-label="Bakery ordering chat preview">
-          <div class="chat-head">
-            <span class="chat-avatar" aria-hidden="true">🤖</span>
-            <div class="chat-head-text">
-              <span class="chat-title">Crumb &amp; Craft Assistant</span>
-              <span class="chat-sub"><span class="chat-dot" aria-hidden="true"></span>Preview — chat ordering opens soon</span>
+        <div class="chat-layout">
+          <div class="chat-shell" aria-label="Bakery ordering chat">
+            <div class="chat-head">
+              <span class="chat-dot" aria-hidden="true"></span>
+              <span class="chat-title">Bakery Assistant</span>
+              <button class="chat-reset" id="chat-reset" type="button">Start over</button>
             </div>
+
+            <!-- Chat messages are rendered here by script.js and sent to /api/chat -->
+            <div class="chat-window" id="chat-window" role="log" aria-live="polite" aria-label="Chat messages"></div>
+
+            <form class="chat-input-row" id="chat-form">
+              <label class="sr-only" for="chat-input">Message the bakery assistant</label>
+              <input type="text" id="chat-input" name="message" placeholder="Try: I'd like two croissants" autocomplete="off" maxlength="500" />
+              <button class="btn btn-primary chat-send" type="submit">Send</button>
+            </form>
           </div>
 
-          <!-- Chat messages are rendered here by script.js once wired to /api/chat -->
-          <div class="chat-window" id="chat-window" role="log" aria-live="polite" aria-label="Chat messages">
-            <div class="chat-msg is-bot">
-              <span class="chat-msg-avatar" aria-hidden="true">🥐</span>
-              <div class="chat-bubble">
-                <p class="chat-msg-text">Hi there! I'm the bakery assistant. Soon you'll be able to say things like "two sourdough loaves, please" and I'll build your order from today's menu. 🍞</p>
-              </div>
-            </div>
-            <div class="chat-msg is-user">
-              <div class="chat-bubble">
-                <p class="chat-msg-text">Sounds delicious — can't wait to try it!</p>
-              </div>
-            </div>
+          <aside class="order-panel" aria-label="Your order">
+          <div class="order-head">
+            <h3 class="order-title"><span aria-hidden="true">🧾</span> Your Order</h3>
+            <span class="order-status" id="order-status">PENDING</span>
           </div>
-
-          <div class="chat-suggestions" role="group" aria-label="Suggested messages (preview only)">
-            <button class="chip" type="button" disabled>🥖 Two sourdough loaves</button>
-            <button class="chip" type="button" disabled>🎂 Birthday cake for Friday</button>
-            <button class="chip" type="button" disabled>🥐 What's fresh this morning?</button>
+          <div class="order-customer" id="order-customer" hidden>
+            Customer: <strong id="order-customer-name"></strong>
           </div>
-
-          <form class="chat-input-row" id="chat-form" action="#" novalidate>
-            <label class="sr-only" for="chat-input">Message the bakery assistant</label>
-            <input type="text" id="chat-input" name="message" placeholder="Chat ordering is coming soon…" disabled autocomplete="off" />
-            <button class="btn btn-primary" type="submit" disabled>Send</button>
-          </form>
-
-          <p class="chat-note">This is a placeholder for the ordering chatbot. In the meantime, call <a href="tel:+15550142214">(555) 014-2214</a> or email <a href="mailto:hello@crumbandcraft.example">hello@crumbandcraft.example</a> to place an order.</p>
+          <ul class="order-items" id="order-items"></ul>
+          <p class="order-empty" id="order-empty">No items yet — chat with the assistant to build your order.</p>
+          <dl class="order-total-row">
+            <dt>Total</dt>
+            <dd id="order-total">$0.00</dd>
+          </dl>
+          <button class="btn btn-primary order-confirm" id="order-confirm" type="button" disabled>Confirm Order</button>
+          <button class="btn btn-ghost order-cancel" id="order-cancel" type="button" disabled>Cancel Order</button>
+        </aside>
         </div>
       </div>
     </section>
