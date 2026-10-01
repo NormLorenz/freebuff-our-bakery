@@ -152,8 +152,9 @@
     if (!menuStatus) return;
     menuStatus.textContent =
       "We couldn't load the menu (menu.json). If you opened this page directly " +
-      "from your file system, browsers block local data fetches — try serving the " +
-      'folder instead, e.g. "python -m http.server 8000".';
+      "from your file system, browsers block local data fetches — serve the " +
+      'project root instead, e.g. "npm start" or "npx serve ." from the folder ' +
+      "that contains menu.json, then open the /public/ URL.";
     menuStatus.hidden = false;
   };
 
@@ -212,14 +213,28 @@
     initCalculator();
   };
 
+  // menu.json lives in the project root (shared with the chat API), while
+  // this script lives in public/. Try the usual relative locations and take
+  // the first response that is both OK and actually menu-shaped data, so the
+  // site works whether the server root is the project root or public/.
+  const looksLikeMenu = (data) =>
+    data && typeof data === "object" && Array.isArray(data.items);
+
   (async () => {
-    try {
-      const response = await fetch("menu.json");
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      renderMenu(await response.json());
-    } catch {
-      showMenuError();
+    const candidates = ["menu.json", "../menu.json", "/menu.json"];
+    for (const url of candidates) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) continue;
+        const data = await response.json();
+        if (!looksLikeMenu(data)) continue; // e.g. an HTML fallback page
+        renderMenu(data);
+        return;
+      } catch {
+        // Try the next candidate location.
+      }
     }
+    showMenuError();
   })();
 
   /* ---------------- Scroll-spy for nav links ---------------- */

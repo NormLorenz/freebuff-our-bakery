@@ -28,11 +28,15 @@ A simple, responsive website for a local bakery, built with plain **HTML, CSS, a
 
 ```
 bakery-website/
-├── index.html   # Page structure (menu cards & filter chips are rendered by JS)
-├── menu.json    # Menu data: items, categories, prices, badges
-├── styles.css   # Styling + light/dark themes (CSS variables)
-├── script.js    # Loads menu.json, then theme toggle, nav, filters, budget calculator, scroll effects (loaded with `defer`)
-└── README.md    # This file
+├── menu.json                # Menu data: items, categories, prices, badges (shared by site + chat API)
+├── public/                  # Static site (served over HTTP)
+│   ├── index.html           # Page structure (menu cards & filter chips are rendered by JS)
+│   ├── styles.css           # Styling + light/dark themes (CSS variables)
+│   ├── script.js            # Loads ../menu.json, then theme toggle, nav, filters, budget calculator, scroll effects (loaded with `defer`)
+│   └── images/              # Site images
+├── api/                     # Backend (chat API)
+│   └── chat.js
+└── README.md                # This file
 ```
 
 ### Menu data format (`menu.json`)
@@ -64,25 +68,15 @@ Items with a missing name or a price ≤ 0 are skipped, and missing optional fie
 
 The menu is fetched from `menu.json`, and browsers block `fetch()` on `file://` pages. Opening the file directly shows an explanation instead of the menu (everything else on the page still works). Serve it over HTTP using one of the options below.
 
-### Option 1 — Local development server (recommended)
+### Option 1 — The included chat server
 
-A local server most closely mimics real hosting and avoids any browser quirks with `file://` URLs. Run **one** of these from this folder:
+`npm start` runs `server.js`, which serves the site, `menu.json`, and the `/api/chat` endpoint on one port:
 
 ```bash
-# Python 3
-python -m http.server 8000
-
-# Node.js
-npx serve .
-
-# VS Code: install the "Live Server" extension, then right-click index.html → "Open with Live Server"
+npm start
 ```
 
-Then visit:
-
-```
-http://localhost:8000
-```
+Then visit `http://localhost:3000` (or add `/public/` — both work).
 
 For hosting, any static host works as-is — GitHub Pages, Netlify, Cloudflare Pages, etc.
 
