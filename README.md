@@ -1,4 +1,6 @@
-# 🥐 Crumb & Craft — Neighborhood Bakery Website https://freebuff-our-bakery-production.up.railway.app/
+# 🥐 Crumb & Craft — Neighborhood Bakery Website
+
+https://freebuff-our-bakery-production.up.railway.app/
 
 A simple, responsive website for a local bakery. The site itself is plain **HTML, CSS, and JavaScript** — no frameworks and no build step — with an optional Express server that powers the chatbot ordering API.
 
