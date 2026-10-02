@@ -824,6 +824,9 @@ a:hover {
 .calc-grid {
   display: grid;
   grid-template-columns: 0.9fr 1.3fr;
+  grid-template-areas:
+    "budget items"
+    "tally  items";
   gap: 1.2rem;
   align-items: start;
 }
@@ -966,9 +969,17 @@ a:hover {
   font-variant-numeric: tabular-nums;
 }
 
-/* Summary panel */
+/* Panel placement: budget top-left, tally below it, items on the right */
+.calc-budget {
+  grid-area: budget;
+}
+
+.calc-items-panel {
+  grid-area: items;
+}
+
 .calc-summary {
-  grid-column: 2;
+  grid-area: tally;
 }
 
 .calc-summary-list {
@@ -1069,10 +1080,10 @@ a:hover {
 @media (max-width: 860px) {
   .calc-grid {
     grid-template-columns: 1fr;
-  }
-
-  .calc-summary {
-    grid-column: auto;
+    grid-template-areas:
+      "budget"
+      "tally"
+      "items";
   }
 }
 

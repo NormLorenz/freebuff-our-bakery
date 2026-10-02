@@ -74,7 +74,7 @@ The menu is fetched from `menu.json`, and browsers block `fetch()` on `file://` 
 
 ### Option 1 — The included chat server (recommended)
 
-Install dependencies once, then start the server:
+You'll need a current [Node.js](https://nodejs.org) LTS release installed. Then install dependencies once and start the server:
 
 ```bash
 npm install
@@ -85,9 +85,79 @@ npm start
 
 `npm start` runs `server.js`, which serves the site, `menu.json`, and the `/api/chat` endpoint on one port. Then visit `http://localhost:3000` (or add `/public/` — both work).
 
-The site works out of the box, but the chat endpoint needs an OpenAI API key: copy `.env.example` to `.env` and set `OPENAI_API_KEY` (you can also adjust `OPENAI_MODEL` and `PORT`).
+The site works out of the box, but the chat endpoint needs an OpenAI API key: copy `.env.example` to `.env` (`Copy-Item .env.example .env` in PowerShell) and set `OPENAI_API_KEY` (you can also adjust `OPENAI_MODEL` and `PORT`).
 
-For hosting, any static host works as-is for the site itself — GitHub Pages, Netlify, Cloudflare Pages, etc. Chat ordering requires the Node server (or a serverless deployment of `api/chat.js`).
+### Deployment
+
+- **Static site only** — any static host works as-is for the site itself: GitHub Pages, Netlify, Cloudflare Pages, etc. (chat ordering won't work without the API).
+- **Full project** — any Node.js-capable host: Render, Railway, Vercel, or your own server. Set `OPENAI_API_KEY` there and run `npm start`.
+- **Hybrid** — keep the static frontend where it is and deploy only `api/chat.js` as a serverless function, with a small path adjustment so it can still find `menu.json` (it currently reads `../menu.json` relative to the `api/` folder).
+
+## How the Chat Ordering Works
+
+```
+Customer
+   ↓
+Bakery website (public/)
+   ↓  POST /api/chat
+server.js (Express)
+   ↓
+api/chat.js → OpenAI Responses API
+   ↓  Structured Outputs (strict JSON Schema)
+Website
+   ├── assistant reply in the chat panel
+   └── live order summary on the right
+```
+
+- The backend is Node.js + Express using the official `openai` SDK. The endpoint uses OpenAI's **Responses API** (the Assistants API was sunset in August 2026, so Responses is what OpenAI recommends for new integrations) with **Structured Outputs**: the reply must conform to a JSON Schema, which is more reliable than just asking the model to "please return JSON".
+- The full contents of `menu.json` are sent to the model with **every request**, so prices and item names can never drift from the menu shown on the site. The assistant is instructed to never invent products, IDs, or prices, and to preserve special menu rules (e.g. Chocolate Cupcakes are sold in fours; the Vanilla Bean Celebration Cake requires 3 days' notice).
+- The server keeps no conversation state — the front-end sends the recent message history with each request. There's also a small `GET /api/health` check.
+- A typical response looks like:
+
+```json
+{
+  "customer_response": "Great choice, Mary! ...",
+  "order": {
+    "customer": { "first_name": "Mary" },
+    "items": [
+      { "id": "croissant", "name": "Butter Croissant", "quantity": 2, "unit_price": 4.25, "line_total": 8.5 }
+    ],
+    "order_total": 8.5,
+    "status": "pending"
+  }
+}
+```
+
+The `customer_response` is shown in the chat; the `order` object drives the "Your Order" panel (status: `pending` / `confirmed` / `cancelled`).
+
+### Try this conversation
+
+Once the server is running, open the Order section and try:
+
+> Hi, my name is Mary. I'd like two butter croissants and one Country Sourdough.
+
+> Add four chocolate cupcakes.
+
+> Actually, remove one croissant.
+
+> Confirm my order.
+
+The right-hand order panel updates as the conversation progresses. If you omit your name or an item quantity, the assistant asks for it rather than guessing.
+
+## Limitations
+
+This is a **working ordering demo**, not a production ordering system:
+
+- **Confirm does not send a real order.** It flips the order status to `confirmed` in the browser only — nothing is sent to the bakery.
+- **No payments, inventory, or POS integration.** Nothing is charged, reserved, or forwarded anywhere.
+- **No server-side order storage.** The order exists only in the user's browser session.
+
+Because the order is already structured data (customer, items, totals, status), the natural next step is posting confirmed orders to a database and building a small bakery dashboard that lists incoming orders.
+
+## Security
+
+- The OpenAI call happens entirely in `api/chat.js` on the server. The API key is read from `OPENAI_API_KEY` and is **never** sent to the browser or placed in any front-end file.
+- Before accepting real orders or payments, add authentication, rate limiting, and server-side order storage to a trusted backend.
 
 ## Customizing
 
@@ -109,3 +179,5 @@ Works in all modern browsers (Chrome, Edge, Firefox, Safari). Uses widely suppor
 > **Note:** Updated the site with AI assistance using the **GLM 5.3 Flash** model, from the initial prompt *'Please add a calculator so the user can tally up how much bakery products they can buy.'*
 
 > **Note:** Updated the site with AI assistance using the **GLM 5.3 Flash** model, from the initial prompt *'Please add a new menu item called 'Order' to the right of the 'Calculator' and build a placeholder in the html file so the user can use a chatbot to order items.'*
+
+> **Note:** The chat ordering assistant was built with AI assistance via ChatGPT, from the prompt *'Please build a complete working bakery chatbot project using the attached menu.json file and using OpenAI API.'*
