@@ -90,7 +90,7 @@ The site works out of the box, but the chat endpoint needs an OpenAI API key: co
 ### Deployment
 
 - **Static site only** — any static host works as-is for the site itself: GitHub Pages, Netlify, Cloudflare Pages, etc. (chat ordering won't work without the API).
-- **Full project** — any Node.js-capable host: Render, Railway, Vercel, or your own server. Set `OPENAI_API_KEY` there and run `npm start`.
+- **Full project** — any Node.js-capable host such as Render, Vercel, or your own server — see [Deploying to Railway](#deploying-to-railway) below for a full walkthrough of the Railway option. Set `OPENAI_API_KEY` there and run `npm start`.
 - **Hybrid** — keep the static frontend where it is and deploy only `api/chat.js` as a serverless function, with a small path adjustment so it can still find `menu.json` (it currently reads `../menu.json` relative to the `api/` folder).
 
 ## How the Chat Ordering Works
@@ -158,6 +158,50 @@ Because the order is already structured data (customer, items, totals, status), 
 
 - The OpenAI call happens entirely in `api/chat.js` on the server. The API key is read from `OPENAI_API_KEY` and is **never** sent to the browser or placed in any front-end file.
 - Before accepting real orders or payments, add authentication, rate limiting, and server-side order storage to a trusted backend.
+
+## Deploying to Railway
+
+[Railway](https://railway.com) detects Node.js apps automatically (via [Railpack](https://railpack.com)), installs dependencies, and runs the `start` script from `package.json` — no `Dockerfile` or config file needed. Deploy it two ways:
+
+### Option A — Deploy from GitHub (recommended)
+
+1. **Push this repo to GitHub** (already done for this project) and make sure the latest commits are on the branch you want to deploy.
+2. **Create the project.** Sign in at [railway.com](https://railway.com) → **New Project** → **Deploy from GitHub repo** → pick this repository. Link your GitHub account if prompted.
+   - Choose **Deploy Now** to kick off the first build immediately, or **Add Variables** first (next step) and click **Deploy** afterward — the build will fail without the API key, so adding it before the first deploy is fine either way.
+3. **Add the secrets.** Open the new service's **Variables** tab → **New Variable**, then add:
+
+   | Variable | Value | Notes |
+   |---|---|---|
+   | `OPENAI_API_KEY` | `sk-...` (your real key) | Required for the chat ordering. **Never commit this to the repo** — `.env` is gitignored; the key lives only in Railway's dashboard. Tick the 🔒 **Seal** option (3-dot menu) so the value can't be read back through the UI or API. |
+   | `OPENAI_MODEL` | `gpt-5.6-luna` | Optional — the code defaults to this. |
+   | `PORT` | *(leave unset)* | Railway injects its own `PORT`; the app uses it automatically (`process.env.PORT \|\| 3000`). |
+
+   Tip: the RAW Editor also accepts a pasted `.env`-style list. Railway may even auto-suggest variables from your committed `.env.example`.
+   When done, click **Deploy** to apply the staged changes.
+4. **Generate a public URL.** When the deploy succeeds, go to the service's **Settings** tab → **Networking** → **Generate Domain**. You'll get a `https://<app>.up.railway.app` URL — open it and the site should load.
+5. **Verify.** Visit the URL and check that the menu renders and the chat ordering responds. `GET /api/health` should return `{"ok":true}`.
+
+Every subsequent `git push` to the connected branch automatically redeploys.
+
+### Option B — Deploy with the Railway CLI
+
+1. `npm i -g @railway/cli` (or see the [CLI docs](https://docs.railway.com/guides/cli)) and sign in with `railway login`.
+2. From the project root:
+
+   ```bash
+   railway init          # create & name a new Railway project
+   railway variables --set "OPENAI_API_KEY=sk-..."   # secret never leaves the CLI/Railway
+   railway up            # scan, upload, and deploy
+   railway domain        # generate the public URL
+   ```
+
+   Add more variables with `railway variables --set "KEY=value"`. `railway run npm run dev` runs your local dev server with the Railway variables injected.
+
+### Troubleshooting
+
+- **Deploy fails at build/start** — check **Deployments → View Logs**. Since Railway runs `npm start` (→ `node server.js`), a missing `OPENAI_API_KEY` won't stop the server from booting, but chat requests will return errors — watch the logs for `Chat API error`.
+- **Chat replies with an error bubble** — the `OPENAI_API_KEY` variable is missing or mistyped on Railway. Check the **Variables** tab and redeploy.
+- **Site loads but the menu is empty** — the site fetches `/menu.json`; if you deployed only `public/` without the project root, the file is missing.
 
 ## Customizing
 
