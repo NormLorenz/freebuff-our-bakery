@@ -39,8 +39,10 @@ bakery-website/
 │   ├── styles.css           # Styling + light/dark themes (CSS variables)
 │   ├── script.js            # Loads ../menu.json, then theme toggle, nav, filters, budget calculator, scroll effects (loaded with `defer`)
 │   └── images/              # Site images
-├── api/                     # Backend (chat API)
-│   └── chat.js              # OpenAI-powered ordering assistant (returns structured JSON orders)
+├── api/                     # Backend (chat API) — shared by server.js and Vercel serverless functions
+│   ├── chat.js              # OpenAI-powered ordering assistant (default export = Vercel handler)
+│   └── health.js            # Vercel GET /api/health (server.js serves its own)
+├── vercel.json              # Vercel config: build command (copies menu.json into public/) + output dir
 ├── .env.example             # Template for OPENAI_API_KEY, OPENAI_MODEL, and PORT
 └── README.md                # This file
 ```
@@ -92,8 +94,8 @@ The site works out of the box, but the chat endpoint needs an OpenAI API key: co
 ### Deployment
 
 - **Static site only** — any static host works as-is for the site itself: GitHub Pages, Netlify, Cloudflare Pages, etc. (chat ordering won't work without the API).
-- **Full project** — any Node.js-capable host such as Render, Vercel, or your own server — see [Deploying to Railway](#deploying-to-railway) below for a full walkthrough of the Railway option. Set `OPENAI_API_KEY` there and run `npm start`.
-- **Hybrid** — keep the static frontend where it is and deploy only `api/chat.js` as a serverless function, with a small path adjustment so it can still find `menu.json` (it currently reads `../menu.json` relative to the `api/` folder).
+- **Full project** — see [Deploying to Vercel](#deploying-to-vercel) below for a full walkthrough of deploying the site plus the chat API to Vercel as static files and a serverless function. (For a traditional single Express process — `npm start` — any Node.js-capable host such as Render or your own server works as-is; set `OPENAI_API_KEY` there.)
+- **Hybrid** — keep the static frontend wherever it is (GitHub Pages, Netlify, …) and point it at a Vercel deployment of only the `api/` functions — they already handle the `menu.json` path (see [Deploying to Vercel](#deploying-to-vercel)) — plus an `api/chat.js` base-URL tweak in `script.js`.
 
 ## How the Chat Ordering Works
 
@@ -161,49 +163,54 @@ Because the order is already structured data (customer, items, totals, status), 
 - The OpenAI call happens entirely in `api/chat.js` on the server. The API key is read from `OPENAI_API_KEY` and is **never** sent to the browser or placed in any front-end file.
 - Before accepting real orders or payments, add authentication, rate limiting, and server-side order storage to a trusted backend.
 
-## Deploying to Railway
+## Deploying to Vercel
 
-[Railway](https://railway.com) detects Node.js apps automatically (via [Railpack](https://railpack.com)), installs dependencies, and runs the `start` script from `package.json` — no `Dockerfile` or config file needed. Deploy it two ways:
+[Vercel](https://vercel.com) is a **serverless** platform, so this project deploys differently than it did on Railway's always-running Express server: Vercel serves `public/` as static files from its CDN and turns `api/` into on-demand Node functions for `POST /api/chat` and `GET /api/health`. There's no `npm start` step and no Dockerfile — and no pre-deploy code changes either. The repo is already wired up:
+
+### What's already wired up
+
+- **`vercel.json`** — sets the Build Command (`cp menu.json public/`) and Output Directory (`public`), so importing the repo needs no manual dashboard configuration. The copy of `menu.json` inside `public/` is gitignored and rebuilt on every deploy, so it can never drift from the real file.
+- **`api/chat.js`** — exports both `handleChat` (used by `server.js` locally) and a default-exported `handler(req, res)` that mirrors the `POST /api/chat` wrapper in `server.js`. Vercel parses the JSON request body into `req.body` and injects the dashboard's environment variables automatically. It reads `menu.json` from `public/` when deployed (the `VERCEL` env variable is set inside Vercel functions) and from the project root locally.
+- **`api/health.js`** — a serverless counterpart of `server.js`'s `GET /api/health` that also verifies `menu.json` is readable and reports whether `OPENAI_API_KEY` is configured.
+
+No `PORT` variable is needed — serverless functions have no port to bind.
 
 ### Option A — Deploy from GitHub (recommended)
 
-1. **Push this repo to GitHub** (already done for this project) and make sure the latest commits are on the branch you want to deploy.
-2. **Create the project.** Sign in at [railway.com](https://railway.com) → **New Project** → **Deploy from GitHub repo** → pick this repository. Link your GitHub account if prompted.
-   - Choose **Deploy Now** to kick off the first build immediately, or **Add Variables** first (next step) and click **Deploy** afterward — the build will fail without the API key, so adding it before the first deploy is fine either way.
-3. **Add the secrets.** Open the new service's **Variables** tab → **New Variable**, then add:
+1. **Push this repo to GitHub** and make sure the latest commits are on the branch you want to deploy.
+2. **Import the project.** Sign in at [vercel.com](https://vercel.com) → **Add New… → Project** → pick this repository (link your GitHub account if prompted). Framework Preset: **Other**; the Build Command and Output Directory come pre-filled from `vercel.json` — nothing needs changing.
+3. **Add the secrets.** Expand **Environment Variables** and add:
 
    | Variable | Value | Notes |
    |---|---|---|
-   | `OPENAI_API_KEY` | `sk-...` (your real key) | Required for the chat ordering. **Never commit this to the repo** — `.env` is gitignored; the key lives only in Railway's dashboard. Tick the 🔒 **Seal** option (3-dot menu) so the value can't be read back through the UI or API. |
+   | `OPENAI_API_KEY` | `sk-...` (your real key) | Required for chat ordering. **Never commit this to the repo** — `.env` is gitignored; the key lives only in Vercel's dashboard (encrypted at rest and hidden after saving). |
    | `OPENAI_MODEL` | `gpt-5.6-luna` | Optional — the code defaults to this. |
-   | `PORT` | *(leave unset)* | Railway injects its own `PORT`; the app uses it automatically (`process.env.PORT \|\| 3000`). |
 
-   Tip: the RAW Editor also accepts a pasted `.env`-style list. Railway may even auto-suggest variables from your committed `.env.example`.
-   When done, click **Deploy** to apply the staged changes.
-4. **Generate a public URL.** When the deploy succeeds, go to the service's **Settings** tab → **Networking** → **Generate Domain**. You'll get a `https://<app>.up.railway.app` URL — open it and the site should load.
-5. **Verify.** Visit the URL and check that the menu renders and the chat ordering responds. `GET /api/health` should return `{"ok":true}`.
+4. **Deploy.** Click **Deploy**. When it finishes you'll get a `https://<project>.vercel.app` URL — open it and the site should load.
+5. **Verify.** Check that the menu renders, that chat ordering responds and updates the order panel, and that `GET /api/health` returns `{"ok":true}`. The first chat after a period of idleness may take a few seconds (serverless cold start); requests after that are fast.
 
-Every subsequent `git push` to the connected branch automatically redeploys.
+Every subsequent `git push` to the connected branch automatically redeploys, and pull requests get their own preview deployments.
 
-### Option B — Deploy with the Railway CLI
+### Option B — Deploy with the Vercel CLI
 
-1. `npm i -g @railway/cli` (or see the [CLI docs](https://docs.railway.com/guides/cli)) and sign in with `railway login`.
+1. `npm i -g vercel` (or see the [CLI docs](https://vercel.com/docs/cli)) and sign in with `vercel login`.
 2. From the project root:
 
    ```bash
-   railway init          # create & name a new Railway project
-   railway variables --set "OPENAI_API_KEY=sk-..."   # secret never leaves the CLI/Railway
-   railway up            # scan, upload, and deploy
-   railway domain        # generate the public URL
+   vercel                                    # first run links the project & deploys a preview
+   vercel env add OPENAI_API_KEY production  # paste the key; it never touches the repo
+   vercel --prod                             # promote to the production URL
    ```
 
-   Add more variables with `railway variables --set "KEY=value"`. `railway run npm run dev` runs your local dev server with the Railway variables injected.
+   Add more variables with `vercel env add KEY VALUE` (choose `production` when prompted). `vercel dev` runs the deployed setup locally, using your local `.env` for secrets.
 
 ### Troubleshooting
 
-- **Deploy fails at build/start** — check **Deployments → View Logs**. Since Railway runs `npm start` (→ `node server.js`), a missing `OPENAI_API_KEY` won't stop the server from booting, but chat requests will return errors — watch the logs for `Chat API error`.
-- **Chat replies with an error bubble** — the `OPENAI_API_KEY` variable is missing or mistyped on Railway. Check the **Variables** tab and redeploy.
-- **Site loads but the menu is empty** — the site fetches `/menu.json`; if you deployed only `public/` without the project root, the file is missing.
+- **Deploy fails** — check the build log on the deployment page. The build is just `cp menu.json public/`; a failure usually means `vercel.json` is missing from the pushed branch.
+- **`/api/health` returns `{"ok":false}`** — the deployed `menu.json` copy is missing or invalid, so chat ordering will fail too; check the build log and the **Runtime Logs**.
+- **Site loads but the menu is empty** — the front-end fetches `/menu.json`; if the Build Command or Output Directory was misconfigured, the file isn't in the deployment.
+- **Chat replies with an error bubble** — `OPENAI_API_KEY` is missing or mistyped in **Settings → Environment Variables**. Variable changes only take effect on the *next* deployment, so redeploy after changing one, and watch the deployment's **Runtime Logs** for `Chat API error`.
+- **Chat times out** — Vercel functions have an execution-time limit (10s by default on the Hobby plan); raise it under **Settings → Functions** if the OpenAI round-trip needs longer.
 
 ## Customizing
 

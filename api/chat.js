@@ -5,7 +5,12 @@ import OpenAI from "openai";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const menuPath = path.join(__dirname, "..", "menu.json");
+// On Vercel the build command copies menu.json into public/ (the web root),
+// and deployed functions set VERCEL — so read the copy there; locally, read
+// the project root as usual.
+const menuPath = process.env.VERCEL
+  ? path.join(__dirname, "..", "public", "menu.json")
+  : path.join(__dirname, "..", "menu.json");
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -154,4 +159,24 @@ ${menuText}`,
   }
 
   return JSON.parse(response.output_text);
+}
+
+// Vercel serverless handler for POST /api/chat (the lazy "Other"-framework
+// default export). Mirrors the POST /api/chat wrapper in server.js.
+// Deployment details: README → "Deploying to Vercel".
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method not allowed. Use POST." });
+    return;
+  }
+
+  try {
+    const result = await handleChat(req.body ?? {});
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Chat API error:", error);
+    res.status(500).json({
+      error: "Unable to process the bakery order right now."
+    });
+  }
 }
