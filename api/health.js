@@ -4,11 +4,8 @@ import path from "node:path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// On Vercel, functions run against the deployment where menu.json has been
-// copied into public/ by the build command (see vercel.json).
-const menuPath = process.env.VERCEL
-  ? path.join(__dirname, "..", "public", "menu.json")
-  : path.join(__dirname, "..", "menu.json");
+// Same source of truth as api/chat.js and the front-end: public/menu.json.
+const menuPath = path.join(__dirname, "..", "public", "menu.json");
 
 export default async function handler(_req, res) {
   try {

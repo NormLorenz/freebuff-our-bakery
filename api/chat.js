@@ -5,12 +5,10 @@ import OpenAI from "openai";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// On Vercel the build command copies menu.json into public/ (the web root),
-// and deployed functions set VERCEL — so read the copy there; locally, read
-// the project root as usual.
-const menuPath = process.env.VERCEL
-  ? path.join(__dirname, "..", "public", "menu.json")
-  : path.join(__dirname, "..", "menu.json");
+// menu.json is the single source of truth in public/ — the exact file the
+// site serves at /menu.json (on Vercel the web root is public/, locally
+// express.static serves it). Deployment details: README → "Deploying to Vercel".
+const menuPath = path.join(__dirname, "..", "public", "menu.json");
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY

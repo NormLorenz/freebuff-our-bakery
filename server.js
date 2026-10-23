@@ -12,12 +12,8 @@ const port = Number(process.env.PORT || 3000);
 
 app.use(express.json({ limit: "100kb" }));
 
-// menu.json lives in the project root (shared with the chat API in api/),
-// so expose it explicitly — express.static(public) can't see it.
-app.get("/menu.json", (_req, res) => {
-  res.sendFile(path.join(__dirname, "menu.json"));
-});
-
+// menu.json is a plain file inside public/ (single source of truth shared
+// with the site and the api/ functions), so express.static serves /menu.json.
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/api/chat", async (req, res) => {

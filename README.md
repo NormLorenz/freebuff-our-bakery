@@ -32,17 +32,17 @@ A simple, responsive website for a local bakery. The site itself is plain **HTML
 
 ```
 bakery-website/
-├── menu.json                # Menu data: items, categories, prices, badges (shared by site + chat API)
-├── server.js                # Express server: serves public/, menu.json, and POST /api/chat
+├── server.js                # Express server: serves public/ (site + menu.json) and POST /api/chat
 ├── public/                  # Static site (served over HTTP)
 │   ├── index.html           # Page structure (menu cards & filter chips are rendered by JS)
+│   ├── menu.json            # Menu data: items, categories, prices, badges (single source of truth, shared with the chat API)
 │   ├── styles.css           # Styling + light/dark themes (CSS variables)
-│   ├── script.js            # Loads ../menu.json, then theme toggle, nav, filters, budget calculator, scroll effects (loaded with `defer`)
+│   ├── script.js            # Loads menu.json, then theme toggle, nav, filters, budget calculator, scroll effects (loaded with `defer`)
 │   └── images/              # Site images
 ├── api/                     # Backend (chat API) — shared by server.js and Vercel serverless functions
 │   ├── chat.js              # OpenAI-powered ordering assistant (default export = Vercel handler)
 │   └── health.js            # Vercel GET /api/health (server.js serves its own)
-├── vercel.json              # Vercel config: build command (copies menu.json into public/) + output dir
+├── vercel.json              # Vercel config: no framework, static site served from public/
 ├── .env.example             # Template for OPENAI_API_KEY, OPENAI_MODEL, and PORT
 └── README.md                # This file
 ```
@@ -95,7 +95,7 @@ The site works out of the box, but the chat endpoint needs an OpenAI API key: co
 
 - **Static site only** — any static host works as-is for the site itself: GitHub Pages, Netlify, Cloudflare Pages, etc. (chat ordering won't work without the API).
 - **Full project** — see [Deploying to Vercel](#deploying-to-vercel) below for a full walkthrough of deploying the site plus the chat API to Vercel as static files and a serverless function. (For a traditional single Express process — `npm start` — any Node.js-capable host such as Render or your own server works as-is; set `OPENAI_API_KEY` there.)
-- **Hybrid** — keep the static frontend wherever it is (GitHub Pages, Netlify, …) and point it at a Vercel deployment of only the `api/` functions — they already handle the `menu.json` path (see [Deploying to Vercel](#deploying-to-vercel)) — plus an `api/chat.js` base-URL tweak in `script.js`.
+- **Hybrid** — keep the static frontend wherever it is (GitHub Pages, Netlify, …) and point it at a Vercel deployment of only the `api/` functions — they read their own committed `public/menu.json` (see [Deploying to Vercel](#deploying-to-vercel)) — plus an `api/chat.js` base-URL tweak in `script.js`.
 
 ## How the Chat Ordering Works
 
@@ -169,9 +169,9 @@ Because the order is already structured data (customer, items, totals, status), 
 
 ### What's already wired up
 
-- **`vercel.json`** — sets the Build Command (`cp menu.json public/`) and Output Directory (`public`), so importing the repo needs no manual dashboard configuration. The copy of `menu.json` inside `public/` is gitignored and rebuilt on every deploy, so it can never drift from the real file.
-- **`api/chat.js`** — exports both `handleChat` (used by `server.js` locally) and a default-exported `handler(req, res)` that mirrors the `POST /api/chat` wrapper in `server.js`. Vercel parses the JSON request body into `req.body` and injects the dashboard's environment variables automatically. It reads `menu.json` from `public/` when deployed (the `VERCEL` env variable is set inside Vercel functions) and from the project root locally.
-- **`api/health.js`** — a serverless counterpart of `server.js`'s `GET /api/health` that also verifies `menu.json` is readable and reports whether `OPENAI_API_KEY` is configured.
+- **`vercel.json`** — pins Framework Preset to *Other* (`framework: null`) and the Output Directory to `public`. There is **no Build Command and no copy step**: `menu.json` is a normal committed file inside `public/`, so Vercel serves it at `/menu.json` just like any other static asset — the exact same file the API functions read.
+- **`api/chat.js`** — exports both `handleChat` (used by `server.js` locally) and a default-exported `handler(req, res)` that mirrors the `POST /api/chat` wrapper in `server.js`. Vercel parses the JSON request body into `req.body` and injects the dashboard's environment variables automatically. It reads `public/menu.json` — the same file the site serves — both on Vercel and locally.
+- **`api/health.js`** — a serverless counterpart of `server.js`'s `GET /api/health` that also verifies `public/menu.json` is readable and reports whether `OPENAI_API_KEY` is configured.
 
 No `PORT` variable is needed — serverless functions have no port to bind.
 
@@ -206,19 +206,19 @@ Every subsequent `git push` to the connected branch automatically redeploys, and
 
 ### Troubleshooting
 
-- **Deploy fails** — check the build log on the deployment page. The build is just `cp menu.json public/`; a failure usually means `vercel.json` is missing from the pushed branch.
-- **`/api/health` returns `{"ok":false}`** — the deployed `menu.json` copy is missing or invalid, so chat ordering will fail too; check the build log and the **Runtime Logs**.
-- **Site loads but the menu is empty** — the front-end fetches `/menu.json`; if the Build Command or Output Directory was misconfigured, the file isn't in the deployment.
+- **Deploy fails** — check the build log on the deployment page. There is no build step at all in this version; a `No entrypoint found in output directory` failure comes from the old `cp menu.json public/` Build Command, now removed. If the dashboard's Project Settings hold a stale Build Command or Output Directory from before `vercel.json` existed, clear them — the file alone is what the build uses.
+- **`/api/health` returns `{"ok":false}`** — the deployed `public/menu.json` is missing or invalid, so chat ordering will fail too; check the **Runtime Logs**.
+- **Site loads but the menu is empty** — the front-end fetches `menu.json`; make sure the pushed branch actually contains `public/menu.json`.
 - **Chat replies with an error bubble** — `OPENAI_API_KEY` is missing or mistyped in **Settings → Environment Variables**. Variable changes only take effect on the *next* deployment, so redeploy after changing one, and watch the deployment's **Runtime Logs** for `Chat API error`.
 - **Chat times out** — Vercel functions have an execution-time limit (10s by default on the Hobby plan); raise it under **Settings → Functions** if the OpenAI round-trip needs longer.
 
 ## Customizing
 
-- **Menu items, prices, categories, badges** — edit `menu.json` (see the data format above); the menu section, filter chips, and budget calculator all update from it
+- **Menu items, prices, categories, badges** — edit `public/menu.json` (see the data format above); the menu section, filter chips, and budget calculator all update from it
 - **Colors** — change the CSS variables at the top of `styles.css` (`:root` for light mode, `[data-theme="dark"]` for dark mode)
 - **Fonts** — swap the Google Fonts link in `index.html` and the `--font-*` variables in `styles.css`
 - **Real photos** — replace the emoji placeholders in the menu, gallery, and about sections with `<img>` tags
-- **Prices** — edit a price in `menu.json`; the budget calculator picks it up automatically (it reads prices from the rendered menu cards on load)
+- **Prices** — edit a price in `public/menu.json`; the budget calculator picks it up automatically (it reads prices from the rendered menu cards on load)
 - **Newsletter** — wire the form handler in `script.js` to your email service or backend endpoint
 
 ## Browser Support

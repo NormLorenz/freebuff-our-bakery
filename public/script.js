@@ -151,10 +151,10 @@
   const showMenuError = () => {
     if (!menuStatus) return;
     menuStatus.textContent =
-      "We couldn't load the menu (menu.json). If you opened this page directly " +
-      "from your file system, browsers block local data fetches — serve the " +
-      'project root instead, e.g. "npm start" or "npx serve ." from the folder ' +
-      "that contains menu.json, then open the /public/ URL.";
+      "We couldn't load the menu (public/menu.json). If you opened this page directly " +
+      "from your file system, browsers block local data fetches — serve the site " +
+      'over HTTP instead: run "npm start" (or "npx serve ." from the project root) ' +
+      "and open the /public/ URL.";
     menuStatus.hidden = false;
   };
 
@@ -213,10 +213,10 @@
     initCalculator();
   };
 
-  // menu.json lives in the project root (shared with the chat API), while
-  // this script lives in public/. Try the usual relative locations and take
-  // the first response that is both OK and actually menu-shaped data, so the
-  // site works whether the server root is the project root or public/.
+  // menu.json lives next to this script in public/ (the chat API reads the
+  // same file). Try the usual relative locations and take the first response
+  // that is both OK and actually menu-shaped data, so the site works whether
+  // the server root is the project root or public/ itself.
   const looksLikeMenu = (data) =>
     data && typeof data === "object" && Array.isArray(data.items);
 
